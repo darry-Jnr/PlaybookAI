@@ -42,7 +42,6 @@ export function Hero() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Button variant="ghost">Learn More</Button>
           </div>
         </div>
       </div>
