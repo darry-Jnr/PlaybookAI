@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Search, ListFilter, ArrowLeft, Trash2 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { fetchHistory, deleteGeneration } from "@/lib/api";
@@ -25,6 +26,7 @@ function dateLabel(iso: string): string {
 }
 
 export default function HistoryPage() {
+  const router = useRouter();
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,6 +42,7 @@ export default function HistoryPage() {
   }, []);
 
   const filtered = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
     return entries.filter((e) => {
       if (searchQuery && !e.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
@@ -52,7 +55,7 @@ export default function HistoryPage() {
   }, [entries, searchQuery, dateFilter]);
 
   const handleRestore = (entry: HistoryEntry) => {
-    window.location.href = `/create?id=${entry.id}`;
+    router.push(`/create?id=${entry.id}`);
   };
 
   const handleDelete = async (id: string) => {

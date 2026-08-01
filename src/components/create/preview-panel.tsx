@@ -31,6 +31,17 @@ interface PreviewPanelProps {
 const PAGE_W = 400;
 const PAGE_H = 520;
 
+type PageFlipApi = {
+  getCurrentPageIndex: () => number;
+  turnToPage: (page: number) => void;
+  flipNext: () => void;
+  flipPrev: () => void;
+};
+
+type FlipBookRef = { pageFlip: () => PageFlipApi | undefined };
+
+type FlipEvent = { data: number };
+
 function flipPageToStory(fp: number, total: number) {
   if (fp === 0) return "Cover";
   if (fp === total - 1) return "Back Cover";
@@ -47,7 +58,7 @@ const Page = forwardRef<HTMLDivElement, { children: React.ReactNode }>(
 Page.displayName = "Page";
 
 export function PreviewPanel({ generating, expanded, onExpand, onCollapse, book, assetUrls, stageProgress, generationId }: PreviewPanelProps) {
-  const bookRef = useRef<any>(null);
+  const bookRef = useRef<FlipBookRef | null>(null);
   const [curLabel, setCurLabel] = useState("Cover");
   const [showDownload, setShowDownload] = useState(false);
   const [showPages, setShowPages] = useState(false);
@@ -132,7 +143,7 @@ export function PreviewPanel({ generating, expanded, onExpand, onCollapse, book,
         playModeRef.current = true;
       })
       .catch(() => stopPlayback());
-  }, [book, total, stopPlayback, cancelAudio]);
+  }, [book, total, stopPlayback]);
 
   const togglePlay = useCallback(() => {
     if (playModeRef.current) {
@@ -144,7 +155,7 @@ export function PreviewPanel({ generating, expanded, onExpand, onCollapse, book,
 
   useEffect(() => stopPlayback, [stopPlayback]);
 
-  const onFlip = useCallback((e: any) => {
+  const onFlip = useCallback((e: FlipEvent) => {
     const label = flipPageToStory(e.data, total);
     setCurLabel(label);
     if (playModeRef.current) {

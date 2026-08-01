@@ -19,6 +19,8 @@ function CreatePageInner() {
   const [book, setBook] = useState<BookSpec | null>(null);
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [stageProgress, setStageProgress] = useState<string>("");
+  const [assetUrls, setAssetUrls] = useState<Record<string, { url: string }>>({});
   const { ratio, onMouseDown } = useResizable({ initialRatio: 50, minRatio: 30, maxRatio: 70 });
   const searchParams = useSearchParams();
 
@@ -48,10 +50,7 @@ function CreatePageInner() {
       setSubmitted(true);
       sessionStorage.removeItem("restore_session");
     }
-  }, [searchParams]);
-
-  const [stageProgress, setStageProgress] = useState<string>("");
-  const [assetUrls, setAssetUrls] = useState<Record<string, { url: string }>>({});
+  }, [searchParams, setAssetUrls]);
 
   const handleSubmit = async () => {
     if (!prompt.trim() || prompt.trim().length < 4) return;

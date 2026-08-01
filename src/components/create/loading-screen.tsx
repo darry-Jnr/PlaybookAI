@@ -17,16 +17,19 @@ const STAGES = [
 
 export function LoadingScreen({ visible }: LoadingScreenProps) {
   const [activeStage, setActiveStage] = useState(0);
+  const [lastVisible, setLastVisible] = useState(visible);
+
+  if (visible !== lastVisible) {
+    setLastVisible(visible);
+    if (!visible) setActiveStage(0);
+  }
 
   const advance = useCallback(() => {
     setActiveStage((s) => (s >= STAGES.length - 1 ? s : s + 1));
   }, []);
 
   useEffect(() => {
-    if (!visible) {
-      setActiveStage(0);
-      return;
-    }
+    if (!visible) return;
 
     const timers: ReturnType<typeof setTimeout>[] = [];
     STAGES.forEach((_, i) => {

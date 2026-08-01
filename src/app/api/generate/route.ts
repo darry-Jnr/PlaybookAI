@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { planStory, DEFAULT_CHAT_MODEL } from "@/lib/groq";
+import { planStory } from "@/lib/groq";
 import { generateImage, DEFAULT_IMAGE_MODEL } from "@/lib/cf-image";
 import { store } from "@/lib/store";
 import { saveGeneration, updateGenerationAssets } from "@/lib/history";
