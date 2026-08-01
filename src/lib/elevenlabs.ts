@@ -1,17 +1,16 @@
-export const DEFAULT_VOICE_ID = "ErXwobaYiN019PkySvjV";
-
 export interface SpeechResult {
   data: Buffer;
   contentType: string;
 }
+
+const VOICE_ID = "ErXwobaYiN019PkySvjV";
 
 export async function synthesizeSpeech(text: string): Promise<SpeechResult> {
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) {
     throw new Error("ELEVENLABS_API_KEY is not set.");
   }
-  const voiceId = process.env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE_ID;
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`;
 
   const res = await fetch(url, {
     method: "POST",

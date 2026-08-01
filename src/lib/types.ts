@@ -77,28 +77,3 @@ export type StreamEvent =
       message: string;
       hint?: string;
     };
-
-export function validateSpec(raw: unknown): BookSpec {
-  if (!raw || typeof raw !== "object") {
-    throw new Error("Story planner returned invalid JSON.");
-  }
-  const spec = raw as Partial<BookSpec>;
-  if (
-    typeof spec.title !== "string" ||
-    !Array.isArray(spec.pages) ||
-    spec.pages.length < 4 ||
-    spec.pages.length > 14
-  ) {
-    throw new Error("Story planner returned an invalid storybook plan.");
-  }
-  for (const page of spec.pages) {
-    if (typeof page.illustration_prompt !== "string" || typeof page.text !== "string") {
-      throw new Error("Story planner returned an invalid page plan.");
-    }
-  }
-  spec.age_range = spec.age_range ?? "3-8";
-  spec.back_cover_blurb =
-    spec.back_cover_blurb ?? "Follow our characters on a magical, heartwarming journey!";
-  spec.total_pages = spec.pages.length;
-  return spec as BookSpec;
-}

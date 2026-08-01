@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { synthesizeSpeech } from "@/lib/elevenlabs";
-import { apiError, errMessage } from "@/lib/sse";
+import { errMessage, errorResponse } from "@/lib/sse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,15 +10,10 @@ export async function POST(req: NextRequest) {
   const text = typeof body?.text === "string" ? body.text : "";
 
   if (!process.env.ELEVENLABS_API_KEY) {
-    return apiError(
-      502,
-      "tts_not_configured",
-      "ElevenLabs API key not configured.",
-      "Set ELEVENLABS_API_KEY in .env.local and restart.",
-    );
+    return errorResponse(502, "ElevenLabs API key not configured.");
   }
   if (!text.trim()) {
-    return apiError(422, "bad_text", "Text is required.");
+    return errorResponse(422, "Text is required.");
   }
 
   try {
@@ -31,6 +26,6 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err) {
-    return apiError(502, "tts_upstream_error", errMessage(err), undefined, true);
+    return errorResponse(502, errMessage(err));
   }
 }

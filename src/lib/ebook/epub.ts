@@ -65,12 +65,11 @@ p { font-size: 1.1em; line-height: 1.7; }
 .back-cover-barcode-container { text-align: right; }
 `;
 
-const FIREFLY_SVG = `<svg width="64" height="64" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: inline-block;">
-  <circle cx="12" cy="12" r="8" fill="#ffd700" opacity="0.15" />
-  <circle cx="12" cy="12" r="5" fill="#ffd700" opacity="0.35" />
-  <circle cx="12" cy="12" r="2.5" fill="#ffeb3b" />
-  <ellipse cx="8" cy="11" rx="4" ry="1.5" fill="none" stroke="#ffffff" stroke-width="0.5" transform="rotate(-30 8 11)" />
-  <ellipse cx="16" cy="11" rx="4" ry="1.5" fill="none" stroke="#ffffff" stroke-width="0.5" transform="rotate(30 16 11)" />
+const SPARKLE_SVG = `<svg width="64" height="64" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: inline-block;">
+  <circle cx="12" cy="12" r="8" fill="#e39b1f" opacity="0.15" />
+  <circle cx="12" cy="12" r="5" fill="#e39b1f" opacity="0.35" />
+  <circle cx="12" cy="12" r="2.5" fill="#ffd700" />
+  <path d="M12 3 L13 9 L19 12 L13 15 L12 21 L11 15 L5 12 L11 9 Z" fill="#ffd700" opacity="0.9" />
 </svg>`;
 
 function barcodeSvg(title: string): string {
@@ -182,7 +181,7 @@ export async function buildEpub(
 
   oebps.file(
     "end.xhtml",
-    `${xhtmlHead("The End")}<body><div class="back-cover-wrapper"><div style="margin-bottom: 1.5em;">${FIREFLY_SVG}</div><h1>&ldquo;${title}&rdquo;</h1><p class="back-cover-blurb">${blurb}</p><p class="back-cover-the-end">THE END</p><hr class="back-cover-divider"/><div class="back-cover-footer"><div class="back-cover-publisher">Published by Playbook AI</div><div class="back-cover-barcode-container">${barcodeSvg(spec.title)}</div></div></div></body></html>`,
+    `${xhtmlHead("The End")}<body><div class="back-cover-wrapper"><div style="margin-bottom: 1.5em;">${SPARKLE_SVG}</div><h1>&ldquo;${title}&rdquo;</h1><p class="back-cover-blurb">${blurb}</p><p class="back-cover-the-end">THE END</p><hr class="back-cover-divider"/><div class="back-cover-footer"><div class="back-cover-publisher">Published by Playbook AI</div><div class="back-cover-barcode-container">${barcodeSvg(spec.title)}</div></div></div></body></html>`,
   );
   manifest.push(`<item id="end" href="end.xhtml" media-type="application/xhtml+xml"/>`);
   spine.push(`<itemref idref="end"/>`);

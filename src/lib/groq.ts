@@ -1,8 +1,7 @@
 import type { BookSpec } from "./types";
-import { validateSpec } from "./types";
 
-export const DEFAULT_CHAT_MODEL = "llama-3.3-70b-versatile";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const MODEL = "llama-3.3-70b-versatile";
 
 const STORY_INSTRUCTION = `You are a children's book author for ages 3-8. Given the seed below, produce a JSON storybook with 6-12 pages. Keep sentences short and playful.
 First pick a \`style_prompt\`: ONE sentence locking the visual look for every page (palette + illustration style + mood, e.g. 'Soft watercolour storybook art, warm pastel palette, friendly rounded characters, whimsical lighting, gentle textures').
@@ -33,7 +32,6 @@ export async function planStory(prompt: string): Promise<BookSpec> {
   if (!apiKey) {
     throw new Error("GROQ_API_KEY is not set.");
   }
-  const model = process.env.CHAT_MODEL || DEFAULT_CHAT_MODEL;
   const res = await fetch(GROQ_URL, {
     method: "POST",
     headers: {
@@ -41,7 +39,7 @@ export async function planStory(prompt: string): Promise<BookSpec> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model,
+      model: MODEL,
       messages: [
         {
           role: "user",
@@ -64,6 +62,5 @@ export async function planStory(prompt: string): Promise<BookSpec> {
   if (typeof text !== "string") {
     throw new Error("Story planner returned an empty response.");
   }
-  const spec = validateSpec(JSON.parse(text));
-  return spec;
+  return JSON.parse(text) as BookSpec;
 }

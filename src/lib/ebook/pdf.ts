@@ -126,7 +126,6 @@ export async function buildPdf(
     if (m) pageInfos.set(Number(m[1]), await embedImage(doc, buf));
   }
 
-  // ── Cover ────────────────────────────────────────────────────────────────
   const cover = doc.addPage([A4_W, A4_H]);
   if (coverInfo) {
     cover.drawImage(coverInfo.image, { x: 0, y: 0, width: A4_W, height: A4_H });
@@ -144,7 +143,7 @@ export async function buildPdf(
   titleY = drawCentered(cover, titleLines, helvBold, 28, WHITE, A4_W - MARGIN * 2, titleY, 34);
   drawCentered(cover, ["by Playbook"], helv, 11, WHITE, A4_W - MARGIN * 2, titleY - 6, 14);
 
-  // ── Story pages ──────────────────────────────────────────────────────────
+  // one story page per spec page — illustration on the left, text on the right
   for (let i = 0; i < spec.pages.length; i++) {
     const page = spec.pages[i];
     const sp = doc.addPage([A4_W, A4_H]);
@@ -173,7 +172,7 @@ export async function buildPdf(
     }
   }
 
-  // ── Back cover ───────────────────────────────────────────────────────────
+  // back cover — dark purple, title + blurb + a fake barcode
   const back = doc.addPage([A4_W, A4_H]);
   back.drawRectangle({ x: 0, y: 0, width: A4_W, height: A4_H, color: DARK_PURPLE });
 

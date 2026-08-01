@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { store } from "@/lib/store";
+import { readFile } from "@/lib/files";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export async function GET(
 ) {
   const { key } = await ctx.params;
   const joined = key.join("/");
-  const buf = await store.get(joined);
+  const buf = await readFile(joined);
   if (!buf) {
     return Response.json({ detail: "Not found" }, { status: 404 });
   }

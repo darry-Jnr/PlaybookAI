@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { planStory } from "@/lib/groq";
-import { store } from "@/lib/store";
+import { saveFile } from "@/lib/files";
 import { saveGeneration } from "@/lib/history";
-import { apiError, errMessage } from "@/lib/sse";
+import { errMessage, errorResponse } from "@/lib/sse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const prompt = typeof body?.prompt === "string" ? body.prompt.trim() : "";
   if (prompt.length < 4) {
-    return apiError(422, "bad_prompt", "Prompt must be at least 4 characters.");
+    return errorResponse(422, "Prompt must be at least 4 characters.");
   }
 
   try {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const sessionId = req.headers.get("x-session-id") ?? "anon";
     const planKey = `generations/${genId}/book.json`;
 
-    await store.put(planKey, Buffer.from(JSON.stringify(spec, null, 2)));
+    await saveFile(planKey, Buffer.from(JSON.stringify(spec, null, 2)));
     await saveGeneration(sessionId, {
       id: genId,
       prompt,
@@ -34,12 +34,6 @@ export async function POST(req: NextRequest) {
 
     return Response.json({ spec, plan_key: planKey, generation_id: genId });
   } catch (err) {
-    return apiError(
-      502,
-      "plan_failed",
-      errMessage(err),
-      "Check GROQ_API_KEY and try again.",
-      true,
-    );
+    return errorResponse(502, errMessage(err));
   }
 }

@@ -1,10 +1,12 @@
 import { NextRequest } from "next/server";
 import { planStory } from "@/lib/groq";
-import { generateImage, DEFAULT_IMAGE_MODEL } from "@/lib/cf-image";
-import { store } from "@/lib/store";
+import { generateImage } from "@/lib/cf-image";
+import { assetUrl, saveFile } from "@/lib/files";
 import { saveGeneration, updateGenerationAssets } from "@/lib/history";
 import { errMessage, sse } from "@/lib/sse";
 import type { AssetsMap, BookSpec, StreamEvent } from "@/lib/types";
+
+const IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
         send({ kind: "story.plan", spec });
 
         const planKey = `generations/${genId}/book.json`;
-        await store.put(planKey, Buffer.from(JSON.stringify(spec, null, 2)));
+        await saveFile(planKey, Buffer.from(JSON.stringify(spec, null, 2)));
         if (!specProvided) {
           await saveGeneration(sessionId, {
             id: genId,
@@ -49,7 +51,6 @@ export async function POST(req: NextRequest) {
 
         const assets: AssetsMap = {};
 
-        // ── B0: cover ──────────────────────────────────────────────────────
         currentStage = "B0.cover";
         send({ kind: "stage.start", stage: currentStage });
         send({
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
           step_index: 0,
           total_steps: 1,
           provider: "cf",
-          model: DEFAULT_IMAGE_MODEL,
+          model: IMAGE_MODEL,
         });
         const coverStart = Date.now();
         try {
@@ -68,9 +69,9 @@ export async function POST(req: NextRequest) {
               : spec.cover_prompt,
           );
           const key = `generations/${genId}/cover.png`;
-          await store.put(key, img.data);
+          await saveFile(key, img.data);
           const asset = {
-            url: store.url(key),
+            url: assetUrl(key),
             media_type: img.mediaType,
             width: img.width,
             height: img.height,
@@ -98,7 +99,8 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        // ── B1: illustrations ──────────────────────────────────────────────
+        // generate one illustration per page, best effort — a failed page
+        // just gets skipped so the rest of the book still comes out
         currentStage = "B1.illustrations";
         send({ kind: "stage.start", stage: currentStage });
         const total = spec.pages.length;
@@ -110,7 +112,7 @@ export async function POST(req: NextRequest) {
             step_index: i,
             total_steps: total,
             provider: "cf",
-            model: DEFAULT_IMAGE_MODEL,
+            model: IMAGE_MODEL,
           });
           const stepStart = Date.now();
           try {
@@ -121,9 +123,9 @@ export async function POST(req: NextRequest) {
                 : page.illustration_prompt,
             );
             const key = `generations/${genId}/page_${i}.png`;
-            await store.put(key, img.data);
+            await saveFile(key, img.data);
             const asset = {
-              url: store.url(key),
+              url: assetUrl(key),
               media_type: img.mediaType,
               width: img.width,
               height: img.height,
@@ -155,7 +157,7 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        // ── B2: narration (live in the reader) ─────────────────────────────
+        // B2 narration is generated live in the reader, so nothing to do here
         currentStage = "B2.narration";
         send({
           kind: "notice",
@@ -164,7 +166,6 @@ export async function POST(req: NextRequest) {
             "Narration is generated live in the reader — the book will not include per-page audio.",
         });
 
-        // ── C: compose ─────────────────────────────────────────────────────
         currentStage = "C.compose";
         send({ kind: "stage.start", stage: currentStage });
         if (Object.keys(assets).length === 0) {
@@ -193,10 +194,7 @@ export async function POST(req: NextRequest) {
         send({
           kind: "error",
           stage: currentStage,
-          code: "generation_failed",
-          retryable: true,
           message: errMessage(err),
-          hint: "Check provider API keys and try again.",
         });
       } finally {
         controller.close();
