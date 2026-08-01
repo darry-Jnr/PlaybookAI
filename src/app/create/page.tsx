@@ -11,7 +11,7 @@ import { fetchGeneration, generateStream, planStorybook } from "@/lib/api";
 import type { BookSpec } from "@/lib/types";
 
 function CreatePageInner() {
-  const [prompt, setPrompt] = useState("A firefly who learns to shine from within");
+  const [prompt, setPrompt] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -44,6 +44,7 @@ function CreatePageInner() {
     const restore = sessionStorage.getItem("restore_session");
     if (restore) {
       const data = JSON.parse(restore);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPrompt(data.prompt);
       setMessages(data.messages);
       if (data.assets) setAssetUrls(data.assets);
